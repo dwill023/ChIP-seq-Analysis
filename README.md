@@ -169,3 +169,21 @@ plotCorrelation --corData multiBamArray_foxo3B.npz \
 plotPCA -in multiBamArray_foxo3B.npz -o pca.png
 ```
 4. Use the readCounts.tab file generated above for input into `DESeq2` for differential expression. 
+
+## Visualization
+1. Coverage plots show the peaks across the whole genome.
+Use R library ChIPseeker to generate plot.
+2. Heatmaps generated around transcription start sites (TSS) can show the density of the reads in these regions and which may show if the protein has a function at TSS. 
+Use deepTools to generate heatmaps
+3. Peaks can be visualized in IGV (Integrative Genomics Viewer).
+The raw signal track must be normalized to the sequencing depth before visualization and comparison to peak called files. 
+Load the peak files (filtered_peaks.bed) with the normalized bigWig (.bw) files to see the peak regions and the peaks.
+
+## Annotation & Functional Enrichment
+1 Peak annotation will show the regulatory regions (promoters, TSS, introns, UTRs) these peaks are associated with.
+Use ChIPseeker to annotate the blacklisted filtered peak files (filtered_peaks.bed).
+2. Pathway enrihchment for the annnotated peaks can provide possible regulatory gene ontologies.
+Use R library clusterProfiler.
+
+## Motif Discovery
+A note on generating motifs: they tend to be more subjective as many peak prediction methods still produce a high number of false positives.
