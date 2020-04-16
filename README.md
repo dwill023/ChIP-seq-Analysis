@@ -148,7 +148,7 @@ bedops -m day0.bed day7.bed > consensus_peaks.bed
 wc -l consensus_peaks.bed # shows the number of peaks 
 ```
 3. Generate the count matrix file (numpy array .npz file) for input into DESeq2 R package for differential expression.
-```python
+```powershell
 conda activate bioinfo
 
 multiBamSummary BED-file --BED consensus_peaks.bed -bamfiles\                                                                             
