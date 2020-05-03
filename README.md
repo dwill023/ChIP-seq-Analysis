@@ -6,7 +6,7 @@ Experimental work flow of ChIP-seq below shows some of the check points that sho
 
 Best practices for sequencing of the libraries:
 - Avoid batches or distribute samples evenly over batches
-- sequencing depth of 20-40 million reads for standard transcription factors and higher (40-80 million) for broad profiles like histones.
+- sequencing depth of 20-40 million reads for standard transcription factors and higher (40-80 million) for broad profiles like histones ([ENCODE, 2017](https://www.encodeproject.org/chip-seq/transcription_factor/)).
 
 The analysis workflow below:
 
