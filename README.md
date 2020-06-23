@@ -53,33 +53,28 @@ ls *fastq.gz | parallel bowtie2 -p10 -x $REF -U {} -S {.}.sam
 1. Using [Samtools](http://www.htslib.org/doc/samtools.html) the .sam file will be converted to .bam files for downstream processing.
 ```powershell
 module load samtools
-ls *.sam | parallel --eta --verbose "samtools view -h -b {} > {.}.bam"
+ls *.sam | parallel --eta --verbose "samtools view -h -b -S {} > {.}.bam"
 ```
 2. Sort the bam files by genomic coordinates using [Sambamba](http://lomereiter.github.io/sambamba/index.html).
 ```python
 conda activate bioinfo
-sambamba sort -t 2 -o sample.sorted.bam sample.bam
+sambamba sort -t 2 input.bam > sorted.bam
 ```
 3. Filter out uniquely mapped reads
 The filter command -F takes out multimappers `[XS]` and not unmapped and not duplicate reads.
 ```python
 sambamba view -h -t 2 -f bam -F "[XS] == null and not unmapped  and not duplicate" \
-sample.sorted.bam > sample.bam
+sample.sorted.bam > filtered.bam
 ```
 
 ## Peak Calling
 Using MACS2 (Model-based Analysis for ChIP-Seq). Merge BAM files of replicates prior to peak calling. Merging the BAM files of technical/biological replicates can improve sensitivity of peak calling, as the number of read depth and coverage increases when the replicates are merged.
 
-1. Merging the bam files: samtools merge – merges multiple sorted input files into a single output.
+1. Merging the bam files:sambamba will automatically index the merged bam files.
 ```powershell
-module load samtools
-samtools merge -r outfile.bam rep1.bam rep2.bam
+sambamba merge <output.bam> <input1.bam> <input2.bam>
 ```
-2. Index the merged bam file
-```powershell
-ls *.bam | parallel --eta --verbose "samtools index {}"
-```
-3. Predict the fragment length for each merged bam file and write it down. This will be used for extending the fragment size in the peak calling function.
+2. Predict the fragment length for each merged bam file and write it down. This will be used for extending the fragment size in the peak calling function.
 ```python
 conda activate bioinfo
 macs2 predictd -i file.bam -g hs -m 5 20
@@ -90,7 +85,7 @@ macs2 predictd -i file.bam -g hs -m 5 20
 --extsize: when nomodel is on, you set this parameter to define the extension of reads in 5'->3' direction to fix-sized fragment. This is used when MACS fails to build a model or when you know the size of the binding region of your protein.
 For the option --extsize input the predicted fragment length for the ChIP.bam file.
 ```powershell
-macs2 callpeak -t <ChIP.bam> -c <Control.bam> -f BAM -g hs -n ChIP -B -q 0.05 –nomodel --extsize 200
+macs2 callpeak -t <ChIP.bam> -c <Control.bam> -f BAM -g hs -n ChIP_name -B -q 0.05 -–nomodel --extsize 200
 ```
 
 ## Quality Assessment
