@@ -34,7 +34,7 @@ trimmomatic SE -threads 4 sample.fastq.gz sample.trimmed.fastq.gz LEADING:3 TRAI
 After trimming, rerun FastQC to check the quality.
 
 ## Alignment to Genome
-Since our reads are 75-bp long the [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) aligner is a good choice. Another aligner, [BWA](https://github.com/lh3/bwa) is comparable. An index of the genome must first be generated before alignment. Indexing the genome allows for efficient search and retrieval of matches of the query (sequence read) to the genome.
+Since our reads are 75-bp long the [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) aligner is a good choice and seems to be the most popular in ChIP-seq pipelines. An index of the genome must first be generated before alignment. Indexing the genome allows for efficient search and retrieval of matches of the query (sequence read) to the genome.
 
 Indxing:
 ```powershell
@@ -52,15 +52,26 @@ REF=/BT2_index_files/hg38
 ls *fastq.gz | parallel bowtie2 -p10 -x $REF -U {} -S {.}.sam
 ```
 ## Filter reads
-After a lengthly research on the correct, or widely accepted, method of filtering the reads for ChIP-seq, filtering by the mapping quality (MAPQ) score is the way to go. Tutorials have mentioned to filter out uniquely mapped reads but filtering by the MAPQ value allows us to apply a measure of confidence that the reported position is correct. This is because the MAPQ is a representation of how probable the read is mapped wrongly. It is generalized as a non-negative interger MAPQ = = -10 log10(p), where p is an estimate of the probability that the alignment does not correspond to the read’s true point of origin. The general consensus is having a MAPQ cutoff of 10. How Bowtie2 assigns the scores can be found [here](http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html#bt2english). 
+After a lengthly research on the correct, or widely accepted, method of filtering the reads for ChIP-seq, filtering by the mapping quality (MAPQ) score is the way to go. Tutorials have mentioned to filter out uniquely mapped reads but filtering by the MAPQ value allows us to apply a measure of confidence that the reported position is correct. This is because the MAPQ is a representation of how probable the read is mapped wrongly. It is generalized as a non-negative interger MAPQ = -10 log10(p), where p is an estimate of the probability that the alignment does not correspond to the read’s true point of origin. The general consensus is having a MAPQ cutoff of 10. How Bowtie2 assigns the scores can be found [here](http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html#bt2english). 
+
 Different aligners have different methods of calculating the MAPQ. Therefore, looking up how the aligner assigns the MAPQ is necessary before determining your cutoff. Since Bowtie2 is used here the general cutoff of 10 is applied by using samtools.
 
 ```powershell
 module load samtools
 samtools view -Sb -q 10 reads.sam > reads.filtered.bam
+
+## above can be run in parallel using GNU Parallel
+module load parallel
+parallel --j 4 THREADS=4 samtools view -Sb -q 10 {} ">" {.}.bam ::: *.sam
+```
+After filtering the bam files must be sorted and indexed:
+```
+parallel --j 4 THREADS=4 samtools sort {} -o {.}.sorted.bam ::: *.bam
+
+parallel --j 4 THREADS=4 samtools index {} ::: *.sorted.bam
 ```
 
-### To obtain reads aligning exactly once (uniquely mapped)
+#### To obtain reads aligning exactly once (uniquely mapped)
 If we still wanted to filter out those reads that aliged only once the below steps can be followed.
 
 1. Using [Samtools](http://www.htslib.org/doc/samtools.html) the .sam file will be converted to .bam files for downstream processing.
@@ -90,7 +101,7 @@ sambamba merge <output.bam> <input1.bam> <input2.bam>
 2. Predict the fragment length for each merged bam file and write it down. This will be used for extending the fragment size in the peak calling function.
 ```python
 conda activate bioinfo
-macs2 predictd -i file.bam -g hs -m 5 20
+macs2 predictd -i file.bam
 ```
 4. Peak calling
 
@@ -98,7 +109,7 @@ macs2 predictd -i file.bam -g hs -m 5 20
 --extsize: when nomodel is on, you set this parameter to define the extension of reads in 5'->3' direction to fix-sized fragment. This is used when MACS fails to build a model or when you know the size of the binding region of your protein.
 For the option --extsize input the predicted fragment length for the ChIP.bam file.
 ```powershell
-macs2 callpeak -t <ChIP.bam> -c <Control.bam> -f BAM -g hs -n ChIP_name -B -q 0.05 -–nomodel --extsize 200
+macs2 callpeak -t <ChIP.bam> -c <Control.bam> -f BAM -g hs -n ChIP_name -B -q 0.01 -–nomodel --extsize 200
 ```
 
 ## Quality Assessment
