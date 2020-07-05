@@ -65,7 +65,7 @@ module load parallel
 parallel --j 4 THREADS=4 samtools view -Sb -q 10 {} ">" {.}.bam ::: *.sam
 ```
 After filtering the bam files must be sorted and indexed:
-```
+```powershell
 parallel --j 4 THREADS=4 samtools sort {} -o {.}.sorted.bam ::: *.bam
 
 parallel --j 4 THREADS=4 samtools index {} ::: *.sorted.bam
@@ -170,7 +170,7 @@ wc -l consensus_peaks.bed # shows the number of peaks
 ```powershell
 conda activate bioinfo
 
-multiBamSummary BED-file --BED consensus_peaks.bed -bamfiles\                                                                             
+multiBamSummary BED-file --BED consensus_peaks.bed --bamfiles\                                                                             
 d0_FOXO3B_I_.sorted.bam \
 d0_FOXO3B_III_.sorted.bam \ 
 d7_FOXO3B_I_.sorted.bam \
