@@ -216,7 +216,7 @@ A note on generating motifs: they tend to be more subjective as many peak predic
 REF=hg38.fa 
 BED=D0_FoxO1_summits.bed
 
-bedtools slop -g $REF -i $BED -b 50 > extended.bed
+bedtools slop -g $REF.fai -i $BED -b 50 > extended.bed
 ```
 2. Extract the sequences from the bed file and store it in a fasta file for uploding into MEME-ChIP. First remove any 'random' or 'alt' chromosome peaks from the bed file.
 ```powershell
