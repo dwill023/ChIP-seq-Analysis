@@ -136,6 +136,8 @@ cc_result <- qualityScores_EM("merged bam file for sample",
                               savePlotPath = "/metrics")
 ```
 
+Another assessmet of the ChIP peaks can be a **comparison with DNaseI hypersensitivity data**. Comparing the DNase track or reads with the ChIP-seq track/reads can provide an idea of the quality of the peak regions. Since limited DNase treated chromatin of a specific cell type that is sequenced shows regions of open chromatin where transcription factors are likely to bind, the ChIP for a transcription factor should have the majority of its peaks falling within the DNase hypersensitivity regions. This can be in indicator that the ChIP worked if the majority of the peaks are in those regions. The comparison can be performed using a genome browser, or to get a more quantitative measure of the union of the ChIP peaks with the DNase sites [bedtools intersect](https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html) can generate the number of overlapping peaks.
+
 ## Remove blacklisted regions
 These regions within the genome such as repetitive regions (centromeres, telomeres, satellite repeats) tend to have a very high ratio of multi-mapping to unique mapping reads and high variance of mappability. [See this paper](https://www.nature.com/articles/s41598-019-45839-z).
 
